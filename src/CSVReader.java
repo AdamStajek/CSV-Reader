@@ -2,6 +2,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +30,7 @@ public class CSVReader {
 
     public CSVReader(String filename,String delimiter,boolean hasHeader) throws IOException {
         try{
-        reader = new BufferedReader(new FileReader(filename));}
+        reader = new BufferedReader(new FileReader(filename, StandardCharsets.UTF_8));}
         catch(Exception FileNotFoundException){
             System.out.print("Wrong file name.");
         }
@@ -38,7 +42,7 @@ public class CSVReader {
 
     CSVReader(String filename,String delimiter) throws IOException{
         try{
-            reader = new BufferedReader(new FileReader(filename));}
+            reader = new BufferedReader(new FileReader(filename, StandardCharsets.UTF_8));}
         catch(Exception FileNotFoundException){
             System.out.print("Wrong file name.");
         }
@@ -50,7 +54,7 @@ public class CSVReader {
 
     CSVReader(String filename) throws IOException{
         try{
-            reader = new BufferedReader(new FileReader(filename));}
+            reader = new BufferedReader(new FileReader(filename,StandardCharsets.UTF_8));}
         catch(Exception FileNotFoundException){
             System.out.print("Wrong file name.");
         }
@@ -106,11 +110,13 @@ public class CSVReader {
     }
 
     String get(String columnlabel){
-        int el = columnLabelsToInt.get(columnlabel);
-        if(el == -1){
-            throw new RuntimeException("Name of the column is wrong!");
-        }
-        return current[el];
+        int index;
+        try{
+        index = columnLabelsToInt.get(columnlabel);}
+        catch(NullPointerException e){
+            throw new RuntimeException("Name of the column is wrong!");}
+        String el = current[index];
+        return (el==null) ? "": el;
     }
 
     int getInt(int columnindex) throws NumberFormatException{
@@ -171,11 +177,25 @@ public class CSVReader {
     }
 
     boolean isMissing(String columnLabel){
-        return get(columnLabel).isEmpty();
+        int columnIndex = columnLabelsToInt.get(columnLabel);
+        return isMissing(columnIndex);
     }
 
     boolean isMissing(int columnIndex){
-        return get(columnIndex).isEmpty();
+        if(columnIndex >= getRecordLength()){
+        return true;
+        }
+        return current[columnIndex].isEmpty();
+    }
+
+    LocalTime getTime(int columnIndex, String format){
+        String val = this.get(columnIndex);
+        return LocalTime.parse(val, DateTimeFormatter.ofPattern(format));
+    }
+
+    LocalDate getDate(int columnIndex, String format){
+        String val = this.get(columnIndex);
+        return LocalDate.parse(val, DateTimeFormatter.ofPattern(format));
     }
 
 
