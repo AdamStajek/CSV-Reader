@@ -12,7 +12,7 @@ public class AdminUnit {
     List<AdminUnit> children;
 
     public String toString(){
-        return String.format("%s %d %f %f %f %s", name, adminLevel, population, area, density, parent != null ? parent.name : "");
+        return String.format("%s %d %f %f %f %s %s", name, adminLevel, population, area, density, parent != null ? parent.name : "", bbox.toString());
     }
 
     //funkcja pomocnicza

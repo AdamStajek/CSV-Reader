@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.Locale;
 
 import static java.lang.System.out;
 
@@ -64,15 +65,40 @@ public class Main {
         unitList.read("admin-units.csv");
         AdminUnitList selected = unitList.selectByName(".*ma.*", true);
         for(AdminUnit unit: unitList.units){
-            System.out.println(unit.name);
-            unit.listChildren();
+            //System.out.println(unit.name);
+            //unit.listChildren();
         }
 
+        //szukanie sąsiadów dla nie-miejscowości z pomiarem czasu
+        AdminUnitList brzeszcze = unitList.selectByName("gmina Brzeszcz.*", true);
+        AdminUnit unit = brzeszcze.units.get(0);
+        double t1 = System.nanoTime()/1e6;
+        AdminUnitList neighbours = brzeszcze.getNeighbours(unit, 100);
+        double t2 = System.nanoTime()/1e6;
+        //System.out.printf(Locale.US,"t2-t1=%f\n",t2-t1);
+        for(AdminUnit neighbour: neighbours.units){
+            //System.out.println(neighbour.toString());
+        }
 
+        //szukanie sąsiadów dla miejscowości
+        AdminUnitList wil = unitList.selectByName("Wilamowic.*", true);
+        AdminUnit wil1 = wil.units.get(0);
+        t1 = System.nanoTime()/1e6;
+        AdminUnitList neighbours_wil = wil.getNeighbours(wil1, 10);
+        t2 = System.nanoTime()/1e6;
+        System.out.printf(Locale.US,"t2-t1=%f\n",t2-t1);
+        for(AdminUnit neighbour: neighbours_wil.units){
+            System.out.println(neighbour.toString());
+        }
 
-
-
-
+        //dystans warszawa kraków
+        AdminUnitList krk = unitList.selectByName("Krakó.*", true);
+        AdminUnit krakow = krk.units.get(3);
+        AdminUnitList wwa = unitList.selectByName("Warszaw.*", true);
+        AdminUnit warszawa = wwa.units.get(0);
+        //System.out.println(krakow.toString());
+        //System.out.println(warszawa.toString());
+        //System.out.println(krakow.bbox.distanceTo(warszawa.bbox));
 
 
 
