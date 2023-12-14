@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
+import java.util.function.Predicate;
 
 
 public class AdminUnitList {
@@ -155,4 +156,111 @@ public class AdminUnitList {
 
         return neighbours;
     }
+
+    /**
+     * Sortuje daną listę jednostek (in place = w miejscu)
+     * @return this
+     */
+    AdminUnitList sortInPlaceByName(){
+        class cmp implements Comparator<AdminUnit>{
+            public int compare(AdminUnit a, AdminUnit b){
+                return a.name.compareTo(b.name);
+            }
+        }
+
+        this.units.sort(new cmp());
+        return this;
+    }
+
+    /**
+     * Sortuje daną listę jednostek (in place = w miejscu)
+     * @return this
+     */
+    AdminUnitList sortInplaceByArea() {
+        Comparator<AdminUnit> byArea = new Comparator<>() {
+            public int compare(AdminUnit o1, AdminUnit o2) {
+                return Double.compare(o1.area, o2.area);
+            }
+        };
+        this.units.sort(byArea);
+        return this;
+    }
+
+    /**
+     * Sortuje daną listę jednostek (in place = w miejscu)
+     * @return this
+     */
+    AdminUnitList sortInplaceByPopulation(){
+        this.units.sort((x,y)->Double.compare(x.population, y.population));
+        return this;
+    }
+
+    AdminUnitList sortInplace(Comparator<AdminUnit> cmp){
+        this.units.sort(cmp);
+        return this;
+    }
+
+    AdminUnitList sort(Comparator<AdminUnit> cmp){
+        AdminUnitList newlist = new AdminUnitList();
+        newlist.units = new ArrayList<>(this.units);
+        newlist.sortInplace(cmp);
+        return newlist;
+    }
+
+    /**
+     *
+     * @param pred referencja do interfejsu Predicate
+     * @return nową listę, na której pozostawiono tylko te jednostki,
+     * dla których metoda test() zwraca true
+     */
+    AdminUnitList filter(Predicate<AdminUnit> pred){
+        AdminUnitList newlist = new AdminUnitList();
+        newlist.units = new ArrayList<>(this.units);
+        newlist.units.removeIf(pred.negate());
+        return newlist;
+    }
+
+    /**
+     * Zwraca co najwyżej limit elementów spełniających pred
+     * @param pred - predykat
+     * @param limit - maksymalna liczba elementów
+     * @return nową listę
+     */
+    AdminUnitList filter(Predicate<AdminUnit> pred, int limit){
+        AdminUnitList newlist = new AdminUnitList();
+        newlist.units = new ArrayList<>(this.units);
+        newlist.units.removeIf(pred.negate());
+        if(limit < newlist.units.size()){
+            newlist.units = newlist.units.subList(0, limit);}
+        return newlist;
+    }
+
+    /**
+     * Zwraca co najwyżej limit elementów spełniających pred począwszy od offset
+     * Offest jest obliczany po przefiltrowaniu
+     * @param pred - predykat
+     * @param - od którego elementu
+     * @param limit - maksymalna liczba elementów
+     * @return nową listę
+     */
+    AdminUnitList filter(Predicate<AdminUnit> pred, int offset, int limit){
+        AdminUnitList newlist = new AdminUnitList();
+        newlist.units = new ArrayList<>(this.units);
+        newlist.units.removeIf(pred.negate());
+        if(offset + limit < newlist.units.size()){
+            newlist.units = newlist.units.subList(offset, offset + limit);}
+        else if (offset + limit > newlist.units.size()) {
+            newlist.units = newlist.units.subList(offset, newlist.units.size());
+        }
+        else if (offset > newlist.units.size()) {
+            newlist.units = new ArrayList<>();
+        }
+        return newlist;
+    }
+
+
+
+
+
+
 }

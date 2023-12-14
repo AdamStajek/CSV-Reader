@@ -1,5 +1,7 @@
 import java.io.*;
+import java.util.Comparator;
 import java.util.Locale;
+import java.util.function.Predicate;
 
 import static java.lang.System.out;
 
@@ -86,7 +88,7 @@ public class Main {
         t1 = System.nanoTime()/1e6;
         AdminUnitList neighbours_wil = wil.getNeighbours(wil1, 10);
         t2 = System.nanoTime()/1e6;
-        System.out.printf(Locale.US,"t2-t1=%f\n",t2-t1);
+        //System.out.printf(Locale.US,"t2-t1=%f\n",t2-t1);
         for(AdminUnit neighbour: neighbours_wil.units){
             System.out.println(neighbour.toString());
         }
@@ -100,9 +102,76 @@ public class Main {
         //System.out.println(warszawa.toString());
         //System.out.println(krakow.bbox.distanceTo(warszawa.bbox));
 
+        //test sortowania
+        AdminUnitList unitList1 = new AdminUnitList();
+        unitList1.read("admin-units.csv");
+        unitList1.sortInplaceByArea();
+        unitList1.units.removeIf(a->a.parent==null);
+
+        //unitList1.list(out);
+
+
+        //elementy na k
+        //unitList1.filter(a->a.name.startsWith("K")).sort(Comparator.comparingDouble(a -> a.area)).list(out);
+        //powiaty w Małopolsce
+        //unitList1.filter(a->a.parent.name.equals("województwo małopolskie")).sort(Comparator.comparingDouble(a -> a.area)).list(out);
+        //inne
+        //unitList1.filter(a->a.population > 10000).sort(Comparator.comparingDouble(a -> a.population)).list(out);
+        //unitList1.filter(a->a.area > 25).sort(Comparator.comparingDouble(a -> a.area)).list(out);
+        //unitList1.filter(a->a.parent.name.equals("powiat ostrowiecki")).sort(Comparator.comparingDouble(a -> a.area)).list(out);
+
+        Predicate<AdminUnit> p = (a->a.population > 10000);
+        p = p.and(a->a.parent.name.equals("województwo śląskie"));
+        Predicate<AdminUnit> r = (a->a.area > 25 && a.adminLevel==7);
+        p = p.or(r);
+        //unitList1.filter(p, 100, 150).list(out);
+
+        //zapytania
+        unitList.units.removeIf(a->a.parent==null);
+
+        AdminUnitQuery query = new AdminUnitQuery()
+                .selectFrom(unitList)
+                .where(a->a.area>1000)
+                .or(a->a.name.startsWith("Sz"))
+                .sort((a,b)->Double.compare(a.area,b.area))
+                .limit(100);
+        query.execute().list(out);
+
+        AdminUnitQuery query1 = new AdminUnitQuery()
+                .selectFrom(unitList)
+                .where(a->a.adminLevel==6)
+                .or(a->a.name.startsWith("Ostr"))
+                .sort((a,b)->Double.compare(a.population,b.population))
+                .offset(50);
+        query1.execute().list(out);
+
+        AdminUnitQuery query2 = new AdminUnitQuery()
+                .selectFrom(unitList)
+                .where(a->a.population > 30000)
+                .or(a->a.parent.name.startsWith("powiat"))
+                .sort((a,b)->Double.compare(a.population,b.population))
+                .limit(10);
+        query2.execute().list(out);
+
+        AdminUnitQuery query3 = new AdminUnitQuery()
+                .selectFrom(unitList)
+                .where(a->a.population > 30000)
+                .or(a->a.area > 30)
+                .sort((a,b)->Double.compare(a.adminLevel,b.adminLevel))
+                .limit(100000);
+        query3.execute().list(out);
 
 
 
-        }
-}
+
+
+
+
+
+
+
+
+
+
+    }}
 
